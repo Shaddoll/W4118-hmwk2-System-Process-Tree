@@ -64,6 +64,7 @@ struct old_linux_dirent;
 struct perf_event_attr;
 struct file_handle;
 struct sigaltstack;
+struct prinfo;
 
 #include <linux/types.h>
 #include <linux/aio_abi.h>
@@ -77,7 +78,6 @@ struct sigaltstack;
 #include <linux/quota.h>
 #include <linux/key.h>
 #include <trace/syscall.h>
-#include <linux/prinfo.h>
 
 /*
  * __MAP - apply a macro to syscall arguments
