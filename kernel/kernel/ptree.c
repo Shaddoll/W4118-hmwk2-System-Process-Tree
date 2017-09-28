@@ -35,7 +35,8 @@ void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	result.uid = current_uid();
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
-	buf[pos] = result;	
+	copy_to_user(buf + pos, &result, sizeof(struct prinfo));
+	//buf[pos] = result;	
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)
