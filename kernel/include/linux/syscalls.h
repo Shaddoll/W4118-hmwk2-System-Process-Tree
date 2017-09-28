@@ -213,7 +213,7 @@ extern struct trace_event_functions exit_syscall_print_funcs;
 	static inline long SYSC##name(__MAP(x,__SC_DECL,__VA_ARGS__))
 #endif
 
-asmlinkage int ptree(struct prinfo __user *buf, int __user *nr);
+asmlinkage long sys_ptree(struct prinfo __user *buf, int __user *nr);
 
 asmlinkage long sys_time(time_t __user *tloc);
 asmlinkage long sys_stime(time_t __user *tptr);
