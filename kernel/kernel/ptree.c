@@ -4,11 +4,11 @@
 #include <linux/kernel.h>
 #include <linux/cred.h>
 #include <trace/events/sched.h>
-#include <uapi/asm-generic/error_base.h>
-#include <asm-generic/uaccess.h>
+#include <asm-generic/errno-base.h>
+//#include <asm-generic/uaccess.h>
 
 int last_child(struct task_struct *p);
-void insert(struct* task_struct t, struct prinfo __user *buf, int pos);
+void insert(struct task_struct *t, struct prinfo __user *buf, int pos);
 int do_ptree(struct prinfo __user *buf, int __user *nr);
 
 SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
@@ -24,42 +24,44 @@ int last_child(struct task_struct *p)
 	return p1 == p2;
 }
 
-void insert(struct* task_struct t, struct prinfo __user *buf, int pos)
+void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 {
 	int i;
 	struct prinfo result = {0};
-	result->parent_pid = t->real_parent->pid;
-	result->pid = t->pid;
-	result->first_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
-	result->state = t->state;
-	result->uid = current_uid();
+	result.parent_pid = t->real_parent->pid;
+	result.pid = t->pid;
+	result.next_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
+	result.state = t->state;
+	result.uid = current_uid();
 	for(i = 0; i < 16; i++)
-		result->comm[i] = t->comm[i];	
+		result.comm[i] = t->comm[i];	
 	buf[pos] = result;	
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)
 {
-	if (buf == NULL || nr == NULL || *nr < 1)
-		return -ENIVAL;
-	if (!access_ok(VERIFY_WRITE, nr, sizeof(int)) || !access_ok(VERIFY_WRITE, buf, *nr * sizeof(prinfo)))
-		RETURN -EFAULT;
-	struct task_struct *p;
 	int count = 0;
+	int size = 0;
+	int n_copy = 0;
+	struct task_struct *p;
+	struct task_struct **st;
+	
+	if (buf == NULL || nr == NULL || *nr < 1)
+		return -EINVAL;
+	if (!access_ok(VERIFY_WRITE, nr, sizeof(int)) || !access_ok(VERIFY_WRITE, buf, *nr * sizeof(struct prinfo)))
+		return -EFAULT;
 	
 	read_lock(&tasklist_lock);
 	for_each_process(p)
 		++count;
-	struct task_struct **st = kcalloc(*nr, sizeof(task_struct), JFP_KERNEL);
-	int size = 0;
-	int n_copy = 0;
+	st = kcalloc(*nr, sizeof(struct task_struct), GFP_KERNEL);
 
 	p = &init_task;
 	st[size++] = p;
 	while (size > 0) {
 		p = st[size - 1];
 		insert(p, buf, n_copy++);
-		if (n_copy == nr)
+		if (n_copy == *nr)
 			break;
 		if (list_empty(&p->children)) {
 			// if no children, search siblings
