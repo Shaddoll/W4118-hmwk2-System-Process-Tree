@@ -1,6 +1,7 @@
 #ifndef _LINUX_PRINFO_H
 #define _LINUX_PRINFO_H
 
+
 #include <linux/types.h>
 
 struct prinfo {
