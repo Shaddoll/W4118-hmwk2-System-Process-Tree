@@ -1,9 +1,15 @@
 #include <linux/syscalls.h>
 #include <linux/slab.h>
 #include <linux/prinfo.h>
+#include <linux/kernel.h>
+#include <linux/cred.h>
 #include <trace/events/sched.h>
 #include <uapi/asm-generic/error_base.h>
 #include <asm-generic/uaccess.h>
+
+int last_child(struct task_struct *p);
+void insert(struct* task_struct t, struct prinfo __user *buf, int pos);
+int do_ptree(struct prinfo __user *buf, int __user *nr);
 
 SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 {
@@ -16,6 +22,20 @@ int last_child(struct task_struct *p)
 	struct task_struct *p1 = list_entry(p->sibling.next, struct task_struct, sibling);
 	struct task_struct *p2 = list_entry(parent->children.next, struct task_struct, children);
 	return p1 == p2;
+}
+
+void insert(struct* task_struct t, struct prinfo __user *buf, int pos)
+{
+	int i;
+	struct prinfo result = {0};
+	result->parent_pid = t->real_parent->pid;
+	result->pid = t->pid;
+	result->first_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
+	result->state = t->state;
+	result->uid = current_uid();
+	for(i = 0; i < 16; i++)
+		result->comm[i] = t->comm[i];	
+	buf[pos] = result;	
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)

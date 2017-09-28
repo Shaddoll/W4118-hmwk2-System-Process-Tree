@@ -661,6 +661,7 @@ __SC_COMP(__NR_recvmmsg, sys_recvmmsg, compat_sys_recvmmsg)
  */
 #define __NR_arch_specific_syscall 244
 
+/* added new system call */
 #define __NR_ptree 245
 __SYSCALL(__NR_ptree, sys_ptree)
 
