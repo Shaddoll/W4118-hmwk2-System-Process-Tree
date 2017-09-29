@@ -7,7 +7,7 @@
 #include <asm-generic/errno-base.h>
 
 int last_child(struct task_struct *p);
-int insert(struct task_struct *t, struct prinfo __user *buf, int pos);
+int insert(struct task_struct *t, struct prinfo  *buf, int pos);
 int do_ptree(struct prinfo __user *buf, int __user *nr);
 
 SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
@@ -23,12 +23,13 @@ int last_child(struct task_struct *p)
 	return p == p2;
 }
 
-int insert(struct task_struct *t, struct prinfo __user *buf, int pos)
+int insert(struct task_struct *t, struct prinfo  *buf, int pos)
 {
 	int i;
 	int rval;
 	rval = 0;
 	struct prinfo result = {0};
+	printk("Attempting to write to position: %d", pos);
 	result.pid = t->pid;
 	result.parent_pid = t->real_parent->pid;
 	if (!last_child(t))
@@ -41,15 +42,17 @@ int insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	}
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
-	rval = copy_to_user(buf + pos, &result, sizeof(struct prinfo));
-	if (rval != 0)
-		return -EFAULT;
+	//rval = copy_to_user(buf + pos, &result, sizeof(struct prinfo));
+	buf[pos] = result;
+	//if (rval != 0)
+	//	return -EFAULT;
 	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
 	return 0;
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)
 {
+	int i = 0;
 	int count = 0;
 	int size = 0;
 	int n_copy = 0;
@@ -58,7 +61,8 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	int ret = 0;
 	struct task_struct *p;
 	struct task_struct **st;
-	
+	struct prinfo *kbuf;
+
 	if (nr == NULL || buf == NULL)
 		return -EINVAL;
 	rval = get_user(knr, nr);
@@ -67,6 +71,9 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	if (rval != 0 || !access_ok(VERIFY_WRITE, knr, sizeof(int)))
 		return -EFAULT;
 	
+	kbuf = kcalloc(knr, sizeof(struct prinfo), GFP_KERNEL);	
+	//ret = copy_from_user(buf, kbuf, sizeof(struct prinfo) * knr);
+
 	//if (buf == NULL || nr == NULL || *nr < 1)
 	//	return -EINVAL;
 	//if (!access_ok(VERIFY_WRITE, nr, sizeof(int)) || !access_ok(VERIFY_WRITE, buf, *nr * sizeof(struct prinfo)))
@@ -84,7 +91,7 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	printk("push: %d, %d, %d\n", p->pid, list_entry(p->children.next, struct task_struct, sibling)->pid, list_entry(p->children.prev, struct task_struct, sibling)->pid);
 	while (size > 0) {
 		p = st[size - 1];
-		rval = insert(p, buf, n_copy++);
+		rval = insert(p, kbuf, n_copy++);
 		if(rval != 0) {
 			ret = -EFAULT;
 			break;
@@ -120,6 +127,9 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 
 	}
 	read_unlock(&tasklist_lock);
+	for(i = 0;i<10;i++)
+		printk("I am here. %d", kbuf[i].pid);
+	ret = copy_to_user(buf, kbuf, sizeof(struct prinfo) * knr);
 	kfree(st);
 	if (ret != 0)
 		return ret;
