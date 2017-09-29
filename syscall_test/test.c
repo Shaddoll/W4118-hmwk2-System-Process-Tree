@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/syscall.h>
 #include "../kernel/include/linux/prinfo.h"
 
 int dfs_print(struct prinfo *tree, const int size, int cur, int indent);
@@ -12,6 +13,7 @@ int main()
 	struct prinfo *buf = NULL;
 	int nr = 9;
 	int ret;
+	int i;
 	
 	buf = (struct prinfo *)malloc(nr * sizeof(struct prinfo));
 	ret = syscall(245, buf, &nr);
@@ -19,7 +21,10 @@ int main()
 	printf("\n===============\nTotal entries: %d\n===============\n", ret);
 	printf("\n===============\nNr: %d\n===============\n", nr);
 	
-	dfs_print(buf, nr, 0, 0);
+	//dfs_print(buf, nr, 0, 0);
+	for (i = 0; i < nr; i++) {
+		print_process(buf[i], 0);
+	}
 	
 	return 0;
 }
@@ -46,7 +51,7 @@ void print_process(const struct prinfo pr, int indent) {
 	for (i = 0; i < indent; i ++)
 		printf("\t");
 	printf("%s,%d,%ld,%d,%d,%d,%ld\n", pr.comm, pr.pid, pr.state,
-		pr.parent_pid, pr.first_child_pid, pr.next_sibling_pid, pr.uid);
+		pr.parent_pid, (int)pr.first_child_pid, pr.next_sibling_pid, pr.uid);
 }
 
 
