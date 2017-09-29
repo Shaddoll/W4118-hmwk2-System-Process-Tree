@@ -20,29 +20,27 @@ int last_child(struct task_struct *p)
 	struct task_struct *parent = p->real_parent;
 	struct task_struct *p1 = list_entry(p->sibling.next, struct task_struct, sibling);
 	struct task_struct *p2 = list_entry(parent->children.prev, struct task_struct, sibling);
-	printk("last_child: %d, %d, %d", parent->pid, p1->pid, p2->pid);
 	return p == p2;
 }
 
 void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 {
 	int i;
-	int x;
 	struct prinfo result = {0};
 	result.pid = t->pid;
 	result.parent_pid = t->real_parent->pid;
-	result.next_sibling_pid = list_entry(t->sibling.next, struct task_struct, sibling)->pid;
+	if (!last_child(t))
+		result.next_sibling_pid = list_entry(t->sibling.next, struct task_struct, sibling)->pid;
 	result.state = t->state;
 	result.uid = current_uid();
 	result.first_child_pid = 0;
 	if (!list_empty(&t->children)) {
 		result.first_child_pid = list_entry(t->children.next, struct task_struct, sibling)->pid;
-		x = list_entry(t->children.prev, struct task_struct, sibling)->pid;
 	}
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
 	copy_to_user(buf + pos, &result, sizeof(struct prinfo));
-	printk("========%s,%d,%ld,%d,%d,%d,%ld, %d\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid, x);
+	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)
@@ -70,7 +68,7 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 
 	p = &init_task;
 	st[size++] = p;
-	printk("push: %d, %d\n", p->pid, p->group_leader->pid);
+	printk("push: %d, %d, %d\n", p->pid, list_entry(p->children.next, struct task_struct, sibling)->pid, list_entry(p->children.prev, struct task_struct, sibling)->pid);
 	while (size > 0) {
 		p = st[size - 1];
 		insert(p, buf, n_copy++);
@@ -93,7 +91,7 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 
 				p = list_entry(p->sibling.next, struct task_struct, sibling);
 				st[size++] = p;
-				printk("push: %d, %d\n", p->pid, p->group_leader->pid);
+	printk("push: %d, %d, %d\n", p->pid, list_entry(p->children.next, struct task_struct, sibling)->pid, list_entry(p->children.prev, struct task_struct, sibling)->pid);
 			}
 			
 		} else {
@@ -101,7 +99,7 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 
 			p = list_entry(p->children.next, struct task_struct, sibling);
 			st[size++] = p;
-			printk("push: %d, %d\n", p->pid, p->group_leader->pid);
+	printk("push: %d, %d, %d\n", p->pid, list_entry(p->children.next, struct task_struct, sibling)->pid, list_entry(p->children.prev, struct task_struct, sibling)->pid);
 		}
 
 	}
