@@ -127,12 +127,11 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 
 	}
 	read_unlock(&tasklist_lock);
-	for(i = 0;i<10;i++)
-		printk("I am here. %d", kbuf[i].pid);
 	ret = copy_to_user(buf, kbuf, sizeof(struct prinfo) * knr);
 	kfree(st);
+	kfree(kbuf);
 	if (ret != 0)
-		return ret;
+		return -EFAULT;
 	//*nr = n_copy;
 	return count;
 }
