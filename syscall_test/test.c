@@ -21,10 +21,10 @@ int main()
 	printf("\n===============\nTotal entries: %d\n===============\n", ret);
 	printf("\n===============\nNr: %d\n===============\n", nr);
 	
-	//dfs_print(buf, nr, 0, 0);
-	for (i = 0; i < nr; i++) {
-		print_process(buf[i], 0);
-	}
+	dfs_print(buf, nr, 0, 0);
+	//for (i = 0; i < nr; i++) {
+	//	print_process(buf[i], 0);
+	//}
 	
 	return 0;
 }
