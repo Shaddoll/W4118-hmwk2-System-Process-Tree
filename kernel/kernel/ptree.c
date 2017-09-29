@@ -32,9 +32,9 @@ void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	printk("=======enter insert=========\n");
 	struct prinfo result = {0};
 	printk("=======insert 1=========\n");
-	result.parent_pid = t->real_parent->pid;
-	printk("=======insert 2=========\n");
 	result.pid = t->pid;
+	printk("=======insert 2=========\n");
+	result.parent_pid = t->real_parent->pid;
 	printk("=======insert 3=========\n");
 	result.next_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
 	printk("=======insert 4=========\n");
