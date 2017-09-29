@@ -11,11 +11,11 @@ void insert(struct* task_struct t, struct prinfo __user *buf, int pos)
 {
 	int i;
 	struct prinfo result = {0};
-	result->parent_pid = t->real_parent->pid;
-	result->pid = t->pid;
-	result->first_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
-	result->state = t->state;
-	result->uid = current_uid();
+	result.parent_pid = t->real_parent->pid;
+	result.pid = t->pid;
+	result.first_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
+	result.state = t->state;
+	result.uid = current_uid();
 	for(i = 0; i < 16; i++)
 		result->comm[i] = t->comm[i];	
 	buf[pos] = result;	
