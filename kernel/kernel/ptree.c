@@ -42,7 +42,7 @@ int insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
 	rval = copy_to_user(buf + pos, &result, sizeof(struct prinfo));
-	if (rval < 0)
+	if (rval != 0)
 		return -EFAULT;
 	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
 	return 0;
