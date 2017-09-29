@@ -29,6 +29,7 @@ int last_child(struct task_struct *p)
 void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 {
 	int i;
+	printk("=======enter insert=========\n");
 	struct prinfo result = {0};
 	result.parent_pid = t->real_parent->pid;
 	result.pid = t->pid;
@@ -43,6 +44,7 @@ void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	copy_to_user(buf + pos, &result, sizeof(struct prinfo));
 	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,
 		result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
+	printk("=======exit insert=========\n");
 	//buf[pos] = result;
 }
 
@@ -74,30 +76,39 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 		p = st[size - 1];
 		insert(p, buf, n_copy++);
 		
+		
+		printk("=======gao 1 start=========\n");
 		if (n_copy == knr)
 			break;
 		if (list_empty(&p->children)) {
 			// if no children, search siblings
 			--size; // pop up the current task from the stack
+			printk("=======gao 2 start=========\n");
 			while (size > 0 && last_child(p)) {
 				// if it is the last child of its parent, pop it
 
 				p = st[size - 1];
 				--size;
 			}
+			printk("=======gao 2 end=========\n");
+			printk("=======gao 3 start=========\n");
 			if (size > 0) {
 				// if it is not the last child of its parent
 
 				p = list_entry(p->sibling.next, struct task_struct, sibling);
 				st[size++] = p;
 			}
+			printk("=======gao 3 end=========\n");
 			
 		} else {
 			// if has some children, push the children in stack
 
+			printk("=======gao 4 start=========\n");
 			p = list_entry(p->children.next, struct task_struct, sibling);
 			st[size++] = p;
+			printk("=======gao 4 end=========\n");
 		}
+		printk("=======gao 1 end=========\n");
 
 	}
 	read_unlock(&tasklist_lock);
