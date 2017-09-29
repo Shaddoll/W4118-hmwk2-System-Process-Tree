@@ -55,6 +55,7 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	int n_copy = 0;
 	int knr = 0;
 	int rval = 0;
+	int ret = 0;
 	struct task_struct *p;
 	struct task_struct **st;
 	
@@ -85,8 +86,8 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 		p = st[size - 1];
 		rval = insert(p, buf, n_copy++);
 		if(rval != 0) {
-			kfree(st);
-			return -EFAULT;
+			ret = -EFAULT;
+			break;
 		}
 		if (n_copy == knr)
 			break;
@@ -120,6 +121,8 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	}
 	read_unlock(&tasklist_lock);
 	kfree(st);
+	if (ret != 0)
+		return ret;
 	//*nr = n_copy;
 	return count;
 }
