@@ -31,16 +31,25 @@ void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	int i;
 	printk("=======enter insert=========\n");
 	struct prinfo result = {0};
+	printk("=======insert 1=========\n");
 	result.parent_pid = t->real_parent->pid;
+	printk("=======insert 2=========\n");
 	result.pid = t->pid;
+	printk("=======insert 3=========\n");
 	result.next_sibling_pid = container_of(t->sibling.next, struct task_struct, sibling)->pid;
+	printk("=======insert 4=========\n");
 	result.state = t->state;
+	printk("=======insert 5=========\n");
 	result.uid = current_uid();
+	printk("=======insert 6=========\n");
 	result.first_child_pid = 0;
+	printk("=======insert 7=========\n");
 	if (!list_empty(&t->children))
 		result.first_child_pid = list_entry(t->children.next, struct task_struct, sibling)->pid;
+	printk("=======insert 8=========\n");
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
+	printk("=======insert 9=========\n");
 	copy_to_user(buf + pos, &result, sizeof(struct prinfo));
 	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,
 		result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
