@@ -7,7 +7,7 @@
 #include <asm-generic/errno-base.h>
 
 int last_child(struct task_struct *p);
-void insert(struct task_struct *t, struct prinfo __user *buf, int pos);
+int insert(struct task_struct *t, struct prinfo __user *buf, int pos);
 int do_ptree(struct prinfo __user *buf, int __user *nr);
 
 SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
@@ -23,9 +23,11 @@ int last_child(struct task_struct *p)
 	return p == p2;
 }
 
-void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
+int insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 {
 	int i;
+	int rval;
+	rval = 0;
 	struct prinfo result = {0};
 	result.pid = t->pid;
 	result.parent_pid = t->real_parent->pid;
@@ -39,8 +41,11 @@ void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	}
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
-	copy_to_user(buf + pos, &result, sizeof(struct prinfo));
+	rval = copy_to_user(buf + pos, &result, sizeof(struct prinfo));
+	if (rval < 0)
+		return -EFAULT;
 	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
+	return 0;
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)
@@ -48,11 +53,18 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	int count = 0;
 	int size = 0;
 	int n_copy = 0;
+	int knr = 0;
+	int rval = 0;
 	struct task_struct *p;
 	struct task_struct **st;
 	
-	int knr;
-	get_user(knr, nr);
+	if (nr == NULL || buf == NULL)
+		return -EINVAL;
+	rval = get_user(knr, nr);
+	if (knr <= 0) 
+		return -EINVAL;
+	if (rval != 0 || !access_ok(VERIFY_WRITE, knr, sizeof(int)))
+		return -EFAULT;
 	
 	//if (buf == NULL || nr == NULL || *nr < 1)
 	//	return -EINVAL;
@@ -71,8 +83,11 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 	printk("push: %d, %d, %d\n", p->pid, list_entry(p->children.next, struct task_struct, sibling)->pid, list_entry(p->children.prev, struct task_struct, sibling)->pid);
 	while (size > 0) {
 		p = st[size - 1];
-		insert(p, buf, n_copy++);
-		
+		rval = insert(p, buf, n_copy++);
+		if(rval != 0) {
+			kfree(st);
+			return -EFAULT;
+		}
 		if (n_copy == knr)
 			break;
 		if (list_empty(&p->children)) {
