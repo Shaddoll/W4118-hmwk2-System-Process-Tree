@@ -11,7 +11,7 @@ void print_process(const struct prinfo pr, int indent);
 int main()
 {
 	struct prinfo *buf = NULL;
-	int nr = 9;
+	int nr = 30;
 	int ret;
 	int i;
 	
