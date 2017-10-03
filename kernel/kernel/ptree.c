@@ -18,7 +18,6 @@ SYSCALL_DEFINE2(ptree, struct prinfo __user *, buf, int __user *, nr)
 int last_child(struct task_struct *p)
 {
 	struct task_struct *parent = p->real_parent;
-	struct task_struct *p1 = list_entry(p->sibling.next, struct task_struct, sibling);
 	struct task_struct *p2 = list_entry(parent->children.prev, struct task_struct, sibling);
 	return p == p2;
 }
@@ -39,8 +38,8 @@ void insert(struct task_struct *t, struct prinfo __user *buf, int pos)
 	}
 	for(i = 0; i < 16; i++)
 		result.comm[i] = t->comm[i];	
-	copy_to_user(buf + pos, &result, sizeof(struct prinfo));
-	printk("========%s,%d,%ld,%d,%d,%d,%ld\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid);
+	i = copy_to_user(buf + pos, &result, sizeof(struct prinfo));
+	printk("========%s,%d,%ld,%d,%d,%d,%ld, copy: %d\n", result.comm, result.pid, result.state,result.parent_pid, result.first_child_pid, result.next_sibling_pid, result.uid, i);
 }
 
 int do_ptree(struct prinfo __user *buf, int __user *nr)
