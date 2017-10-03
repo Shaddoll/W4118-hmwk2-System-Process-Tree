@@ -102,11 +102,14 @@ int do_ptree(struct prinfo __user *buf, int __user *nr)
 
 	}
 	read_unlock(&tasklist_lock);
-	ret = copy_to_user(buf, kbuf, sizeof(struct prinfo) * knr);
-	kfree(st);
-	kfree(kbuf);
+	ret = copy_to_user(buf, kbuf, sizeof(struct prinfo) * n_copy);
 	if (ret != 0)
 		return -EFAULT;
+	ret = copy_to_user(nr, &n_copy, sizeof(int));
+	if (ret != 0)
+		return -EFAULT;
+	kfree(st);
+	kfree(kbuf);
 	//*nr = n_copy;
 	return count;
 }
