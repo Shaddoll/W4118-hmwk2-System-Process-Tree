@@ -47,7 +47,7 @@ int main(void)
 		return 0;
 	}
 
-	ret = syscall(245, NULL, &nr);
+	ret = syscall(245, buf, &nr);
 
 	if (ret < 0) {
 		fprintf(stderr, "Error: %s\n", strerror(errno));
