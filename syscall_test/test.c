@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -11,12 +12,12 @@ void print_process(const struct prinfo pr, int indent);
 int main()
 {
 	struct prinfo *buf = NULL;
-	int nr = 100;
+	int nr = 50;
 	int ret;
 	
 	buf = (struct prinfo *)malloc(nr * sizeof(struct prinfo));
-	ret = syscall(245, buf, &nr);
-	
+	ret = syscall(245, NULL, &nr);
+
 	if (ret < 0) {
 		fprintf(stderr, "Error: %d\n", ret);
 		return 0;
