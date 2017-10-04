@@ -13,18 +13,21 @@ int main()
 	struct prinfo *buf = NULL;
 	int nr = 100;
 	int ret;
-	int i;
 	
 	buf = (struct prinfo *)malloc(nr * sizeof(struct prinfo));
 	ret = syscall(245, buf, &nr);
 	
+	if (ret < 0) {
+		fprintf(stderr, "Error: %d\n", ret);
+		return 0;
+	}
+	
+	/*
 	printf("\n===============\nTotal entries: %d\n===============\n", ret);
 	printf("\n===============\nNr: %d\n===============\n", nr);
+	*/
 	
 	dfs_print(buf, nr, 0, 0);
-	//for (i = 0; i < nr; i++) {
-	//	print_process(buf[i], 0);
-	//}
 	
 	return 0;
 }
