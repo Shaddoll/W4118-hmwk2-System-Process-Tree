@@ -37,14 +37,20 @@ int dfs_print(struct prinfo *tree, const int size, int cur, int indent)
 int main(void)
 {
 	struct prinfo *buf = NULL;
-	int nr = 50;
+	int nr = 200;
 	int ret;
 
 	buf = (struct prinfo *)malloc(nr * sizeof(struct prinfo));
+
+	if (buf == NULL) {
+		fprintf(stderr, "Error: %s\n", strerror(errno));
+		return 0;
+	}
+
 	ret = syscall(245, NULL, &nr);
 
 	if (ret < 0) {
-		fprintf(stderr, "Error: %d\n", ret);
+		fprintf(stderr, "Error: %s\n", strerror(errno));
 		return 0;
 	}
 
