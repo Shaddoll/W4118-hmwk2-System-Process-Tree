@@ -2,3 +2,14 @@ a. Run your test program several times. Which fields in the prinfo structure cha
 	1. Every time we run the test program, the pid of the test and the first_child_pid of the parent of test changes. Because every time the test runs, it's a different process from the previous test. Therefore, the pid of test will probably be different every time. The parent of test only has one child, so the first_child_pid field of the parent changes as the pid of test changes.
 	2. Occasionally, the state of some processes may change, but this situation is pretty rare. Some processes may be blocked and waiting for some event to occur at some certain point of time. However, because we are not doing anything on the emulator, such changes to the state is not common.
 	3. Other fields like comm, parent_pid, next_sibling_pid, uid do not change at all. This is because there is no user interference, and the system remains stable after starting. Therefore, these fields do not change.
+
+b. Only one process called m.webview_shell is started, and its parent is zygote. After clicking the home button, no process is destroyed, because home doesn't kill processes, it just make the process run in the background.
+
+c.
+  i. The process is the parent process of all application processes, it is used to create application processes.
+
+  ii. There is no zygote binary. Zygote's parent is init, so it's created by the init process. In fact, it's started by a binary called app_process.
+ 
+  iii. Zygote process preloads some java classes and libraries, which are often used by application processes. When a new application process is forked, it just copy Zygote's process. And the java classes and libraries memory region are read-only regions. And Linux's copy-on-write strategy can make application processes and zygote share that resources and don't need to copy them. So it can reduces memory usage for shared classes and libraries and setup time as well.
+
+[1] Android Zygote: https://serializethoughts.com/2016/04/15/android-zygote/
