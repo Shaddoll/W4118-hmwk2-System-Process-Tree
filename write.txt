@@ -1,0 +1,10 @@
+b. Only one process called m.webview_shell is started, and its parent is zygote. After clicking the home button, no process is destroyed, because home doesn't kill processes, it just make the process run in the background.
+
+c.
+  i. The process is the parent process of all application processes, it is used to create application processes.
+
+  ii. There is no zygote binary. Zygote's parent is init, so it's created by the init process. In fact, it's started by a binary called app_process.
+ 
+  iii. Zygote process preloads some java classes and libraries, which are often used by application processes. When a new application process is forked, it just copy Zygote's process. And the java classes and libraries memory region are read-only regions. And Linux's copy-on-write strategy can make application processes and zygote share that resources and don't need to copy them. So it can reduces memory usage for shared classes and libraries and setup time as well.
+
+[1] Android Zygote: https://serializethoughts.com/2016/04/15/android-zygote/
