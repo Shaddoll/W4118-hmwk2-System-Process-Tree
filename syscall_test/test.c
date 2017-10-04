@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -15,7 +16,9 @@ int main()
 	int ret;
 	
 	buf = (struct prinfo *)malloc(nr * sizeof(struct prinfo));
-	ret = syscall(245, NULL,  &nr);
+	ret = syscall(245, NULL, &nr);
+	if (ret == -1)
+		fprintf(stderr, "%s\n", strerror(errno));
 	
 	printf("\n===============\nTotal entries: %d\n===============\n", ret);
 	printf("\n===============\nNr: %d\n===============\n", nr);
