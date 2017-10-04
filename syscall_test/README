@@ -1,2 +1,17 @@
-//TODO:
-//ADD A HIGH LEVEL OVERVIEW OF YOUR TEST PROGRAM HERE
+
+============================= FUNCTIONS =============================
+
+- void print_process(const struct prinfo pr, int indent)
+	Print the information of a single prinfo struct
+	with [indent] number of tabs infront of it.
+
+- int dfs_print(struct prinfo *tree, const int size, int cur, int indent)
+	Print the information of all prinfo structs
+	in a sub tree whose root is tree[cur], with
+	[indent] number of tabs infront of the sub
+	tree.
+
+- int main(void)
+	The main function which invoke syscall(245, buf, &nr)
+	and dfs_print(buf, nr, 0, 0) to print all of the prinfo
+	structs in the tree.
