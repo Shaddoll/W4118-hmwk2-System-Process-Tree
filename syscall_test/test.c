@@ -11,11 +11,11 @@ void print_process(const struct prinfo pr, int indent);
 int main()
 {
 	struct prinfo *buf = NULL;
-	int nr = 150;
+	int nr = 50;
 	int ret;
 	
 	buf = (struct prinfo *)malloc(nr * sizeof(struct prinfo));
-	ret = syscall(245, buf, &nr);
+	ret = syscall(245, NULL,  &nr);
 	
 	printf("\n===============\nTotal entries: %d\n===============\n", ret);
 	printf("\n===============\nNr: %d\n===============\n", nr);
